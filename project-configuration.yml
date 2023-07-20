@@ -1,0 +1,53 @@
+header:
+    version: 1
+
+machine: tinker-board-s
+target: core-image-weston
+
+repos:
+    poky:
+        url: "https://git.yoctoproject.org/git/poky"
+        branch: "kirkstone"
+        layers:
+            meta:
+            meta-poky:
+            meta-yocto-bsp:
+    meta-openembedded:
+        url: "https://github.com/openembedded/meta-openembedded"
+        branch: "kirkstone"
+        path: "meta-openembedded"
+        layers:
+            meta-oe:
+    meta-arm:
+        url: "https://git.yoctoproject.org/git/meta-arm"
+        branch: "kirkstone"
+        layers:
+            meta-arm-toolchain:
+            meta-arm:
+    meta-rockchip:
+        url: "https://git.yoctoproject.org/git/meta-rockchip"
+        branch: "kirkstone"
+    meta-clang:
+        url: "https://github.com/kraj/meta-clang"
+        branch: "kirkstone"
+        path: "meta-clang"
+    meta-flutter:
+        url: "https://github.com/meta-flutter/meta-flutter"
+        branch: "kirkstone"
+        path: "meta-flutter"
+
+bblayers_conf_header:
+    standard: |
+        POKY_BBLAYERS_CONF_VERSION = "2"
+
+local_conf_header:
+    standard: |
+        MACHINE_EXTRA_RRECOMMENDS += "kernel-modules"
+        INIT_MANAGER = "systemd"
+        DISTRO_FEATURES:append = " wayland pam"
+        IMAGE_INSTALL:append = " \
+            flutter-engine \
+            flutter-pi \
+            flutter-gallery \
+        "
+        TOOLCHAIN_HOST_TASK:append = " nativesdk-flutter-sdk"
