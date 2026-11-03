@@ -64,5 +64,6 @@ local_conf_header:
     IMAGE_INSTALL:append = " \
         flutter-pi \
         flutter-sdk-dev-integration-tests-flutter-gallery \
+        flutter-gallery-autostart \
     "
     TOOLCHAIN_HOST_TASK:append = " nativesdk-flutter-sdk"

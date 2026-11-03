@@ -1,0 +1,15 @@
+[Unit]
+Description=Flutter gallery on flutter-pi
+After=systemd-udevd.service
+ConditionPathExists=@BUNDLE@/lib/libapp.so
+
+[Service]
+# Release engine and AOT app: meta-flutter's defaults. flutter-pi opens the DRM
+# device and /dev/input itself, so it runs as root and retries until the GPU
+# driver is loaded.
+ExecStart=@BINDIR@/flutter-pi --release @BUNDLE@
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
