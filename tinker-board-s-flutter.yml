@@ -59,6 +59,8 @@ repos:
 
 local_conf_header:
   standard: |
+    BB_NUMBER_THREADS ?= "4"
+    PARALLEL_MAKE ?= "-j 2"
     MACHINE_EXTRA_RRECOMMENDS += "kernel-modules"
     INIT_MANAGER = "systemd"
     IMAGE_INSTALL:append = " \
