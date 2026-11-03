@@ -1,0 +1,3 @@
+# kas clones the layers and builds next to the project file.
+/build/
+/layers/
