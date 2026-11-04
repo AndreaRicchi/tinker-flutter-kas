@@ -63,6 +63,8 @@ local_conf_header:
     PARALLEL_MAKE ?= "-j 2"
     MACHINE_EXTRA_RRECOMMENDS += "kernel-modules"
     INIT_MANAGER = "systemd"
+    # Development image: empty root password, root login on serial and ssh.
+    EXTRA_IMAGE_FEATURES += "debug-tweaks"
     IMAGE_INSTALL:append = " \
         flutter-pi \
         flutter-sdk-dev-integration-tests-flutter-gallery \
