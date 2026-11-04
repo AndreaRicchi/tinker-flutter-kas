@@ -85,8 +85,11 @@ The Tinker Board S has a 16 GB eMMC. Two things to know before starting:
   ROM, which is how you force a board with a bootable eMMC to boot from the SD
   card. Put it back to park once U-Boot is running, otherwise Linux will not
   see the eMMC either.
-- The serial console is UART2 on the 40-pin header (pin 8 TXD, pin 10 RXD,
-  pin 6 GND), 115200 8N1, `ttyS2` in Linux.
+- The serial console is UART2, 115200 8N1, `ttyS2` in Linux. On the 40-pin
+  header it sits at the end away from pin 1: pin 32 is the board's TX (to the
+  adapter's RX), pin 33 the board's RX (to the adapter's TX), pin 34 GND. Pins
+  8 and 10, where a Raspberry Pi has its console, are UART1 on this board and
+  carry nothing during boot.
 
 **1. USB mass storage from U-Boot (micro-USB cable plus serial console)**
 
@@ -148,7 +151,9 @@ Sources: the [ASUS Tinker Board User Guide](https://github.com/TinkerBoard/Tinke
 ```
 
 flutter-pi draws directly on DRM/KMS and reads `/dev/input` itself, so the image
-has no compositor. On the board:
+has no compositor. Log in as `root` with no password on the serial console or
+over SSH: the kas file sets `debug-tweaks`, which is meant for the bench and
+must go before the image ships. On the board:
 
 ```bash
 systemctl status flutter-gallery
@@ -174,6 +179,31 @@ kernel and runs the armv7 `gen_snapshot` itself, so `libapp.so` is a real
 32-bit AOT image. The same three lines work for any other application recipe
 you want on this board.
 
+## Kernel configuration
+
+meta-rockchip builds linux-yocto from the generic `multi_v7_defconfig` and
+then switches off every non-Rockchip platform. The defconfig relies on some of
+those platforms to `select` options it never lists itself, so they disappear
+with them: the fixed-voltage regulator driver, which every RK808 regulator on
+the Tinker Board S depends on, VFP and NEON, PSCI, which the Rockchip
+power-domain driver needs to become visible, HIGHMEM, the Realtek Ethernet
+PHY and the generic EHCI/OHCI host drivers. Without them the kernel stops at
+"Waiting for root device", and even with the root mounted every hard-float
+binary would die and HDMI would stay dark.
+`meta-tinker-flutter/recipes-kernel/linux/files/tinker-board-s.cfg` adds them
+back as a config fragment.
+
+## Power
+
+The RK3288 draws its peak current when cpufreq takes the four cores to full
+speed a few seconds into boot, together with the Ethernet PHY and the USB
+ports coming up. A supply that only lights the red LED at idle resets the
+board at that point: U-Boot then reports `Reset cause: POR` on the next pass.
+Use 5 V at 3 A through a short cable. Until then the kas file passes
+`cpufreq.off=1` on the kernel command line, which keeps the CPU at the
+600 MHz U-Boot set; remove that line once the supply is right, the gallery is
+noticeably slow without the full clock.
+
 ## Flutter development
 
 - The Yocto SDK ships the Flutter SDK (`TOOLCHAIN_HOST_TASK` in the kas file):
@@ -194,4 +224,5 @@ layers/                                        upstream layers, cloned by kas (i
   conf/layer.conf
   recipes-graphics/flutter-gallery-autostart/  systemd unit that starts flutter-pi
   recipes-graphics/flutter-sdk/apps/           32-bit bbappend for the gallery
+  recipes-kernel/linux/                        kernel config fragment for the board
 ```
