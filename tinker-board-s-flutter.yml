@@ -65,6 +65,10 @@ local_conf_header:
     INIT_MANAGER = "systemd"
     # Development image: empty root password, root login on serial and ssh.
     EXTRA_IMAGE_FEATURES += "debug-tweaks"
+    # Keep the CPU at the frequency U-Boot leaves it at (600 MHz). With a weak
+    # 5 V supply the board browns out and resets as soon as cpufreq takes the
+    # four cores to full speed. Remove once a 5 V 3 A supply is in place.
+    UBOOT_EXTLINUX_KERNEL_ARGS:append = " cpufreq.off=1"
     IMAGE_INSTALL:append = " \
         flutter-pi \
         flutter-sdk-dev-integration-tests-flutter-gallery \
